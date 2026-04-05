@@ -179,11 +179,23 @@ function ProjectModal({ project, onClose, onSave }) {
     fd.append(isVideo ? 'video' : 'image', file);
     setUploading(u => ({ ...u, [isVideo ? 'video' : 'thumb']: true }));
     try {
+      console.log('[FRONTEND UPLOAD] Starting upload for type:', type, 'file:', file.name);
       const { data } = await api.post(`/projects/upload/${isVideo ? 'video' : 'thumbnail'}`, fd, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      setForm(f => ({ ...f, [isVideo ? 'videoUrl' : 'thumbnailUrl']: data.url, [isVideo ? 'videoCloudId' : 'thumbnailCloudId']: data.publicId }));
-    } catch (err) { alert('Upload failed: ' + (err.response?.data?.error || err.message)); }
+      console.log('[FRONTEND UPLOAD] Response received:', JSON.stringify(data));
+      if (isVideo) {
+        console.log('[FRONTEND UPLOAD] Setting video values to form');
+        setForm(f => ({ ...f, videoUrl: data.videoUrl, videoCloudId: data.videoCloudId }));
+      } else {
+        console.log('[FRONTEND UPLOAD] Setting thumbnail values to form:', data.thumbnailUrl);
+        setForm(f => ({ ...f, thumbnailUrl: data.thumbnailUrl, thumbnailCloudId: data.thumbnailCloudId }));
+      }
+      console.log('[FRONTEND UPLOAD] Form state updated');
+    } catch (err) { 
+      console.error('[FRONTEND UPLOAD ERROR]', err.message);
+      alert('Upload failed: ' + (err.response?.data?.error || err.message)); 
+    }
     finally { setUploading(u => ({ ...u, [isVideo ? 'video' : 'thumb']: false })); }
   };
 
@@ -277,8 +289,15 @@ function ProjectModal({ project, onClose, onSave }) {
         </div>
 
         <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary" onClick={async () => { await onSave(form); onClose(); }}>Save Project</button>
+          <button className="btn btn-ghost" onClick={onClose} disabled={uploading.thumb || uploading.video}>Cancel</button>
+          <button 
+            className="btn btn-primary" 
+            onClick={async () => { await onSave(form); onClose(); }}
+            disabled={uploading.thumb || uploading.video}
+            style={{ opacity: (uploading.thumb || uploading.video) ? 0.5 : 1, cursor: (uploading.thumb || uploading.video) ? 'not-allowed' : 'pointer' }}
+          >
+            {uploading.thumb || uploading.video ? 'Uploading...' : 'Save Project'}
+          </button>
         </div>
       </div>
     </div>
@@ -297,8 +316,16 @@ export default function Projects() {
   useEffect(() => { load(); }, []);
 
   const handleSave = async (form) => {
-    if (modal === 'new') await api.post('/projects', form);
-    else await api.put(`/projects/${form._id}`, form);
+    console.log('[FRONTEND SAVE] Form data being saved:', JSON.stringify(form));
+    if (modal === 'new') {
+      console.log('[FRONTEND SAVE] Creating new project');
+      await api.post('/projects', form);
+    }
+    else {
+      console.log('[FRONTEND SAVE] Updating project ID:', form._id);
+      await api.put(`/projects/${form._id}`, form);
+    }
+    console.log('[FRONTEND SAVE] Save successful, reloading projects');
     load();
   };
 

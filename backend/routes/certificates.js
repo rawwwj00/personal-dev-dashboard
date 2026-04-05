@@ -1,7 +1,8 @@
 const router = require('express').Router();
+const fs = require('fs');
 const Certificate = require('../models/Certificate');
 const { adminOnly, optionalAuth } = require('../middleware/auth');
-const { uploadImage, cloudinary } = require('../middleware/upload');
+const { uploadImage, cloudinary, uploadToCloudinary } = require('../middleware/upload');
 
 // Get all certificates
 router.get('/', optionalAuth, async (req, res) => {
@@ -21,10 +22,36 @@ router.get('/', optionalAuth, async (req, res) => {
 // Upload certificate image
 router.post('/upload', adminOnly, uploadImage.single('image'), async (req, res) => {
   try {
-    const url = req.file.secure_url || req.file.path;
-    const publicId = req.file.public_id || req.file.filename;
-    res.json({ url, publicId });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+    console.log('[UPLOAD CERTIFICATE] File received:', req.file ? 'YES' : 'NO');
+    if (!req.file) {
+      console.log('[UPLOAD CERTIFICATE] ERROR: No file in request');
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    
+    console.log('[UPLOAD CERTIFICATE] File path:', req.file.path);
+    const cloudResult = await uploadToCloudinary(req.file.path, 'devdash/certificates', 'auto');
+    console.log('[UPLOAD CERTIFICATE] Cloudinary result:', cloudResult);
+    
+    const responseData = { 
+      url: cloudResult.secure_url, 
+      publicId: cloudResult.public_id 
+    };
+    console.log('[UPLOAD CERTIFICATE] Sending response:', JSON.stringify(responseData));
+    
+    // Clean up temp file
+    fs.unlink(req.file.path, (err) => {
+      if (err) console.error('[TEMP FILE DELETE ERROR]', err.message);
+    });
+    
+    res.json(responseData);
+  } catch (e) { 
+    // Clean up temp file on error
+    if (req.file?.path) {
+      fs.unlink(req.file.path, () => {});
+    }
+    console.error('[UPLOAD CERTIFICATE] EXCEPTION:', e.message);
+    res.status(500).json({ error: e.message }); 
+  }
 });
 
 // Create certificate

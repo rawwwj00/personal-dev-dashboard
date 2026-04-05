@@ -17,9 +17,15 @@ function CertModal({ cert, onClose, onSave }) {
     fd.append('image', file);
     setUploading(true);
     try {
+      console.log('[FRONTEND CERTIFICATE UPLOAD] Starting upload for file:', file.name);
       const { data } = await api.post('/certificates/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      console.log('[FRONTEND CERTIFICATE UPLOAD] Response received:', JSON.stringify(data));
       setForm(f => ({ ...f, imageUrl: data.url, cloudinaryId: data.publicId }));
-    } catch (err) { alert('Upload failed: ' + (err.response?.data?.error || err.message)); }
+      console.log('[FRONTEND CERTIFICATE UPLOAD] Form state updated');
+    } catch (err) { 
+      console.error('[FRONTEND CERTIFICATE UPLOAD ERROR]', err.message);
+      alert('Upload failed: ' + (err.response?.data?.error || err.message)); 
+    }
     finally { setUploading(false); }
   };
 
@@ -73,11 +79,18 @@ function CertModal({ cert, onClose, onSave }) {
         </div>
 
         <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary" onClick={async () => {
-            if (!form.title || !form.issuer) return alert('Title and issuer required');
-            await onSave(form); onClose();
-          }}>Save Certificate</button>
+          <button className="btn btn-ghost" onClick={onClose} disabled={uploading}>Cancel</button>
+          <button 
+            className="btn btn-primary" 
+            onClick={async () => {
+              if (!form.title || !form.issuer) return alert('Title and issuer required');
+              await onSave(form); onClose();
+            }}
+            disabled={uploading}
+            style={{ opacity: uploading ? 0.5 : 1, cursor: uploading ? 'not-allowed' : 'pointer' }}
+          >
+            {uploading ? 'Uploading...' : 'Save Certificate'}
+          </button>
         </div>
       </div>
     </div>
