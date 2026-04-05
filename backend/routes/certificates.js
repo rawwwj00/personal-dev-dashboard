@@ -21,7 +21,9 @@ router.get('/', optionalAuth, async (req, res) => {
 // Upload certificate image
 router.post('/upload', adminOnly, uploadImage.single('image'), async (req, res) => {
   try {
-    res.json({ url: req.file.path, publicId: req.file.filename });
+    const url = req.file.secure_url || req.file.path;
+    const publicId = req.file.public_id || req.file.filename;
+    res.json({ url, publicId });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 

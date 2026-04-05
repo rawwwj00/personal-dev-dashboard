@@ -11,13 +11,23 @@ router.get('/', optionalAuth, async (req, res) => {
 });
 
 router.post('/upload/thumbnail', adminOnly, uploadImage.single('image'), async (req, res) => {
-  try { res.json({ url: req.file.path, publicId: req.file.filename }); }
-  catch (e) { res.status(500).json({ error: e.message }); }
+  try {
+    console.log('[UPLOAD thumbnail] req.file:', JSON.stringify(req.file, null, 2));
+    const url = req.file.secure_url || req.file.path;
+    const publicId = req.file.public_id || req.file.filename;
+    console.log('[UPLOAD thumbnail] returning url:', url);
+    res.json({ url, publicId });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 router.post('/upload/video', adminOnly, uploadVideo.single('video'), async (req, res) => {
-  try { res.json({ url: req.file.path, publicId: req.file.filename }); }
-  catch (e) { res.status(500).json({ error: e.message }); }
+  try {
+    console.log('[UPLOAD video] req.file:', JSON.stringify(req.file, null, 2));
+    const url = req.file.secure_url || req.file.path;
+    const publicId = req.file.public_id || req.file.filename;
+    console.log('[UPLOAD video] returning url:', url);
+    res.json({ url, publicId });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 router.post('/', adminOnly, async (req, res) => {

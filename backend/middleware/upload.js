@@ -1,8 +1,8 @@
-const cloudinary = require('cloudinary');
-const CloudinaryStorage = require('multer-storage-cloudinary');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
 
-cloudinary.v2.config({
+cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET
@@ -10,12 +10,20 @@ cloudinary.v2.config({
 
 const imageStorage = new CloudinaryStorage({
   cloudinary,
-  params: { folder: 'devdash', allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'gif'] }
+  params: async (req, file) => ({
+    folder: 'devdash',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'gif'],
+    resource_type: 'image',
+  }),
 });
 
 const videoStorage = new CloudinaryStorage({
   cloudinary,
-  params: { folder: 'devdash/videos', resource_type: 'video', allowed_formats: ['mp4', 'webm', 'mov'] }
+  params: async (req, file) => ({
+    folder: 'devdash/videos',
+    resource_type: 'video',
+    allowed_formats: ['mp4', 'webm', 'mov'],
+  }),
 });
 
 const uploadImage = multer({ storage: imageStorage });
