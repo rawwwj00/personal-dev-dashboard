@@ -3,6 +3,22 @@ import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 
+function ImageModal({ imageUrl, title, onClose }) {
+  return (
+    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal" style={{ maxWidth: '80vw', maxHeight: '90vh' }}>
+        <div className="modal-header">
+          <div className="modal-title">{title}</div>
+          <button className="btn btn-ghost btn-icon btn-sm" onClick={onClose}>✕</button>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'auto', maxHeight: '70vh' }}>
+          <img src={imageUrl} alt={title} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function CertModal({ cert, onClose, onSave }) {
   const [form, setForm] = useState(cert || {
     title: '', issuer: '', date: '', imageUrl: '',
