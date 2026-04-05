@@ -115,99 +115,110 @@ function CertModal({ cert, onClose, onSave }) {
 
 function CertCard({ cert, isAdmin, onEdit, onDelete }) {
   const [flipped, setFlipped] = useState(false);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
 
   return (
-    <div
-      style={{ perspective: '1000px', cursor: 'pointer', height: '300px' }}
-      onClick={() => setFlipped(f => !f)}
-    >
-      <div style={{
-        position: 'relative', width: '100%', height: '100%',
-        transformStyle: 'preserve-3d',
-        transform: flipped ? 'rotateY(180deg)' : 'rotateY(0)',
-        transition: 'transform 0.5s cubic-bezier(0.4,0,0.2,1)',
-      }}>
-        {/* Front */}
+    <>
+      <div
+        style={{ perspective: '1000px', cursor: 'pointer', height: '300px' }}
+        onClick={() => setFlipped(f => !f)}
+      >
         <div style={{
-          position: 'absolute', inset: 0, backfaceVisibility: 'hidden',
-          background: 'var(--surface)', border: '1px solid var(--border)',
-          overflow: 'hidden',
+          position: 'relative', width: '100%', height: '100%',
+          transformStyle: 'preserve-3d',
+          transform: flipped ? 'rotateY(180deg)' : 'rotateY(0)',
+          transition: 'transform 0.5s cubic-bezier(0.4,0,0.2,1)',
         }}>
-          {/* Red accent top bar */}
-          <div style={{ height: '3px', background: 'var(--accent)' }} />
-          {cert.imageUrl ? (
-            <img src={cert.imageUrl} alt={cert.title} style={{ width: '100%', height: '52%', objectFit: 'cover', display: 'block' }} />
-          ) : (
-            <div style={{
-              height: '52%',
-              background: 'var(--surface2)',
-              borderBottom: '1px solid var(--border)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
+          {/* Front */}
+          <div style={{
+            position: 'absolute', inset: 0, backfaceVisibility: 'hidden',
+            background: 'var(--surface)', border: '1px solid var(--border)',
+            overflow: 'hidden',
+          }}>
+            {/* Red accent top bar */}
+            <div style={{ height: '3px', background: 'var(--accent)' }} />
+            {cert.imageUrl ? (
+              <img src={cert.imageUrl} alt={cert.title} style={{ width: '100%', height: '52%', objectFit: 'cover', display: 'block' }} />
+            ) : (
               <div style={{
-                fontFamily: 'var(--font-display)', fontSize: '48px',
-                color: 'var(--accent)', letterSpacing: '0.05em',
-              }}>CERT</div>
+                height: '52%',
+                background: 'var(--surface2)',
+                borderBottom: '1px solid var(--border)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <div style={{
+                  fontFamily: 'var(--font-display)', fontSize: '48px',
+                  color: 'var(--accent)', letterSpacing: '0.05em',
+                }}>CERT</div>
+              </div>
+            )}
+            <div style={{ padding: '16px 18px' }}>
+              <div style={{
+                fontFamily: 'var(--font-display)', fontSize: '20px',
+                letterSpacing: '0.04em', color: 'var(--text)', lineHeight: 1.2,
+                marginBottom: '5px',
+              }}>{cert.title}</div>
+              <div style={{
+                fontFamily: 'var(--font-mono)', fontSize: '11px', fontWeight: 600,
+                color: 'var(--text3)', letterSpacing: '0.2em', textTransform: 'uppercase',
+              }}>{cert.issuer}</div>
+              {cert.date && (
+                <div style={{
+                  fontFamily: 'var(--font-mono)', fontSize: '10px',
+                  color: 'var(--text4)', marginTop: '4px', letterSpacing: '0.15em',
+                }}>{cert.date}</div>
+              )}
+              <div style={{
+                fontFamily: 'var(--font-mono)', fontSize: '10px', fontWeight: 700,
+                color: 'var(--text4)', marginTop: '10px', letterSpacing: '0.25em',
+                textTransform: 'uppercase',
+              }}>Tap to flip ↩</div>
             </div>
-          )}
-          <div style={{ padding: '16px 18px' }}>
+          </div>
+
+          {/* Back */}
+          <div style={{
+            position: 'absolute', inset: 0, backfaceVisibility: 'hidden',
+            transform: 'rotateY(180deg)',
+            background: 'var(--surface)', border: '1px solid var(--border)',
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            padding: '28px 24px', textAlign: 'center', gap: '14px',
+          }}>
+            <div style={{ width: '32px', height: '2px', background: 'var(--accent)' }} />
             <div style={{
-              fontFamily: 'var(--font-display)', fontSize: '20px',
+              fontFamily: 'var(--font-display)', fontSize: '22px',
               letterSpacing: '0.04em', color: 'var(--text)', lineHeight: 1.2,
-              marginBottom: '5px',
             }}>{cert.title}</div>
             <div style={{
-              fontFamily: 'var(--font-mono)', fontSize: '11px', fontWeight: 600,
+              fontFamily: 'var(--font-mono)', fontSize: '11px', fontWeight: 700,
               color: 'var(--text3)', letterSpacing: '0.2em', textTransform: 'uppercase',
-            }}>{cert.issuer}</div>
-            {cert.date && (
-              <div style={{
-                fontFamily: 'var(--font-mono)', fontSize: '10px',
-                color: 'var(--text4)', marginTop: '4px', letterSpacing: '0.15em',
-              }}>{cert.date}</div>
+            }}>Issued by {cert.issuer}</div>
+            {cert.imageUrl && (
+              <button 
+                className="btn btn-primary btn-sm" 
+                onClick={e => { e.stopPropagation(); setImageModalOpen(true); }}
+                style={{ marginTop: '6px' }}
+              >👁 View Certificate</button>
             )}
-            <div style={{
-              fontFamily: 'var(--font-mono)', fontSize: '10px', fontWeight: 700,
-              color: 'var(--text4)', marginTop: '10px', letterSpacing: '0.25em',
-              textTransform: 'uppercase',
-            }}>Tap to flip ↩</div>
+            {cert.verificationUrl && cert.showVerification && (
+              <a
+                href={cert.verificationUrl} target="_blank" rel="noopener noreferrer"
+                className="btn btn-primary btn-sm" onClick={e => e.stopPropagation()}
+                style={{ marginTop: '6px' }}
+              >↗ Verify Certificate</a>
+            )}
+            {isAdmin && (
+              <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                <button className="btn btn-ghost btn-sm" onClick={e => { e.stopPropagation(); onEdit(cert); }}>Edit</button>
+                <button className="btn btn-danger btn-sm" onClick={e => { e.stopPropagation(); onDelete(cert._id); }}>Delete</button>
+              </div>
+            )}
           </div>
         </div>
-
-        {/* Back */}
-        <div style={{
-          position: 'absolute', inset: 0, backfaceVisibility: 'hidden',
-          transform: 'rotateY(180deg)',
-          background: 'var(--surface)', border: '1px solid var(--border)',
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
-          padding: '28px 24px', textAlign: 'center', gap: '14px',
-        }}>
-          <div style={{ width: '32px', height: '2px', background: 'var(--accent)' }} />
-          <div style={{
-            fontFamily: 'var(--font-display)', fontSize: '22px',
-            letterSpacing: '0.04em', color: 'var(--text)', lineHeight: 1.2,
-          }}>{cert.title}</div>
-          <div style={{
-            fontFamily: 'var(--font-mono)', fontSize: '11px', fontWeight: 700,
-            color: 'var(--text3)', letterSpacing: '0.2em', textTransform: 'uppercase',
-          }}>Issued by {cert.issuer}</div>
-          {cert.verificationUrl && cert.showVerification && (
-            <a
-              href={cert.verificationUrl} target="_blank" rel="noopener noreferrer"
-              className="btn btn-primary btn-sm" onClick={e => e.stopPropagation()}
-              style={{ marginTop: '6px' }}
-            >↗ Verify Certificate</a>
-          )}
-          {isAdmin && (
-            <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
-              <button className="btn btn-ghost btn-sm" onClick={e => { e.stopPropagation(); onEdit(cert); }}>Edit</button>
-              <button className="btn btn-danger btn-sm" onClick={e => { e.stopPropagation(); onDelete(cert._id); }}>Delete</button>
-            </div>
-          )}
-        </div>
       </div>
-    </div>
+      {imageModalOpen && <ImageModal imageUrl={cert.imageUrl} title={cert.title} onClose={() => setImageModalOpen(false)} />}
+    </>
   );
 }
 
