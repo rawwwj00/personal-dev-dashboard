@@ -249,6 +249,13 @@ export default function LoginPage() {
           }}>
             GUEST ACCESS — PORTFOLIO, PROJECTS & CERTIFICATES
           </p>
+          <p style={{
+            marginTop: '20px', fontSize: '11px',
+            color: '#FF0000', fontFamily: 'var(--font-mono)',
+            letterSpacing: '0.15em', fontWeight: 600,
+          }}>
+            It is Highly Recommended to view this site in PC/Desktop.
+          </p>
         </div>
       </div>
     </>
